@@ -30,7 +30,34 @@ const createOrder = async (req, res) => {
     }
 }
 
-module.exports = {createOrder};
+
+// Update Transport Order Location History
+const updateTransportLocation = async (req, res) => {
+    try {
+      const { orderId, latitude, longitude, place_name } = req.body;
+  
+      if (!orderId || !latitude || !longitude || !place_name) {
+        return res.status(400).json({ error: "Order ID, latitude, longitude, and place name are required." });
+      }
+  
+      const order = await TransportOrder.findById(orderId);
+  
+      if (!order) {
+        return res.status(404).json({ error: "Transport order not found." });
+      }
+  
+      // Add new location entry to history
+      order.locationHistory.push({ latitude, longitude, place_name });
+  
+      await order.save();
+  
+      res.status(200).json({ message: "Location updated successfully.", locationHistory: order.locationHistory });
+    } catch (error) {
+      res.status(500).json({ error: "Server error", details: error.message });
+    }
+  };
+
+module.exports = {createOrder, updateTransportLocation};
 // materialname=Iron&
 // vehicle_weight_type=tons&
 // vehicle_body_type=close_body&

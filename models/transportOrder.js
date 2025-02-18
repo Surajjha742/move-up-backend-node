@@ -77,6 +77,42 @@ const transportOrderSchema = new mongoose.Schema({
     enum: ["waiting for except", "processing someone", "Pending", "In Transit", "Delivered", "Cancelled"],
     default: "Pending"
   },
+  // 📍 New: Location History (with place name)
+  locationHistory: [
+    {
+      latitude: {
+        type: Number,
+        required: true
+      },
+      longitude: {
+        type: Number,
+        required: true
+      },
+      place_name: {
+        type: String,
+        required: true,
+        trim: true
+      },
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
+  // ✅ New: Accepted Order by Driver
+  accepted_by_driver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Reference to the driver who accepted the order
+    default: null
+  },
+
+  // ✅ New: Accepted Order by Truck
+  accepted_by_truck: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AllTrucks", // Reference to the truck assigned to the order
+    default: null
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

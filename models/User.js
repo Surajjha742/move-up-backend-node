@@ -73,14 +73,37 @@ const userSchema = new mongoose.Schema({
     // 📍 Location Field: User Location
     location: {
         latitude: {
-          type: Number,
-          required: false, // Not mandatory
+            type: Number,
+            required: false, // Not mandatory
         },
         longitude: {
-          type: Number,
-          required: false, // Not mandatory
+            type: Number,
+            required: false, // Not mandatory
         },
-      },
+    },
+    // 🚛 Current Truck Details (For Drivers Only)
+    currentTruckId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Truck", // Reference to the Truck model
+        required: function () {
+            return this.role === "driver";
+        },
+    },
+    currentTruckNumber: {
+        type: String, // Truck registration number
+        trim: true,
+        required: function () {
+            return this.role === "driver";
+        },
+    },
+    // 🏠 Owner (For Truck Owners or Partners)
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Reference to the owner of the truck
+        required: function () {
+            return this.role === "partner"; // Only required for partners
+        },
+    }
 },
     { timestamps: true }
 );

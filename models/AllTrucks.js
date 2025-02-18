@@ -79,6 +79,13 @@ const AllTrucksSchema = mongoose.Schema({
       }
     }
   ],
+
+  assigned_driver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Reference to the driver who is assigned
+    default: null // Null when truck is not assigned
+  },
+  
   // 📍 Location Field: Truck Location
   truck_location: {
     latitude: {
@@ -90,10 +97,75 @@ const AllTrucksSchema = mongoose.Schema({
       required: true
     }
   },
+
+
+  // 🏁 Start Location (Boarding Point)
+  start_location: {
+    place_name: {
+      type: String,
+      required: false,
+      trim: true
+    },
+    latitude: {
+      type: Number,
+      required: false
+    },
+    longitude: {
+      type: Number,
+      required: false
+    }
+  },
+  // ⏸️ Stops Along the Route
+  route_stops: [
+    {
+      place_name: {
+        type: String,
+        required: true,
+        trim: true
+      },
+      latitude: {
+        type: Number,
+        required: true
+      },
+      longitude: {
+        type: Number,
+        required: true
+      }
+    }
+  ],
+  // 🎯 Delivery Locations
+  delivery_locations: [
+    {
+      place_name: {
+        type: String,
+        required: true,
+        trim: true
+      },
+      latitude: {
+        type: Number,
+        required: true
+      },
+      longitude: {
+        type: Number,
+        required: true
+      }
+    }
+  ],
+
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, { timestamps: true });
+
+// 🚛 Middleware: Ensure truck availability before assigning
+AllTrucksSchema.pre("save", function (next) {
+  if (this.assigned_driver) {
+    this.is_available = false; // Mark as unavailable when assigned
+  } else {
+    this.is_available = true; // Mark as available when unassigned
+  }
+  next();
 });
 
 const AllTrucks = mongoose.model("AllTrucks", AllTrucksSchema);

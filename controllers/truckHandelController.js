@@ -7,8 +7,8 @@ const addTruck = async (req, res) => {
         // const truck_image = req.file ? `/uploads/${req.file.filename}` : "";
         // Handling truck image upload
         let truck_location = {};
-        truck_location.latitude = latitude;
-        truck_location.longitude = longitude;
+        truck_location.latitude = parseFloat(latitude);
+        truck_location.longitude = parseFloat(longitude);
         const truck_image = req.files["truck_image"] ? req.files["truck_image"][0].path : null;
 
         // Handling truck documents
@@ -26,7 +26,7 @@ const addTruck = async (req, res) => {
         return res.status(200).json({ message: "Truck successfully added.", data: truck })
     }
     catch (error) {
-        return res.status(500).json({ message: "Invalid request or truck already Register" });
+        return res.status(500).json({ message: "Invalid request or truck already Register", error });
     }
 }
 
