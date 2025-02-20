@@ -41,6 +41,15 @@ const AllTrucksSchema = mongoose.Schema({
     required: true,
     trim: true
   },
+
+  truck_status:{
+    type:String,
+    enum:["searching", "proccessing", "running", ""],
+    required:false,
+    trim:true,
+    default:""
+  },
+
   owner_phone: {
     type: String,
     required: true,
@@ -55,7 +64,7 @@ const AllTrucksSchema = mongoose.Schema({
     ref: "User", // Reference to the User model
     required: true
   },
-  isAccountApproved: {
+  isTruckApproved: {
     type: Boolean,
     default: false
   },
@@ -85,71 +94,76 @@ const AllTrucksSchema = mongoose.Schema({
     ref: "User", // Reference to the driver who is assigned
     default: null // Null when truck is not assigned
   },
-  
-  // 📍 Location Field: Truck Location
+
+  // 📍 Truck's Current Location (GeoJSON)
   truck_location: {
-    latitude: {
-      type: Number,
-      required: true
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
     },
-    longitude: {
-      type: Number,
-      required: true
-    }
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true,
+    },
   },
 
-
-  // 🏁 Start Location (Boarding Point)
+  // 🏁 Start Location (Boarding Point) - GeoJSON
   start_location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: false,
+    },
     place_name: {
       type: String,
       required: false,
-      trim: true
+      trim: true,
     },
-    latitude: {
-      type: Number,
-      required: false
-    },
-    longitude: {
-      type: Number,
-      required: false
-    }
   },
-  // ⏸️ Stops Along the Route
+
+  // ⏸️ Stops Along the Route (GeoJSON)
   route_stops: [
     {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: false,
+      },
       place_name: {
         type: String,
-        required: true,
-        trim: true
+        required: false,
+        trim: true,
       },
-      latitude: {
-        type: Number,
-        required: true
-      },
-      longitude: {
-        type: Number,
-        required: true
-      }
-    }
+    },
   ],
-  // 🎯 Delivery Locations
+
+  // 🎯 Delivery Locations (GeoJSON)
   delivery_locations: [
     {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: false,
+      },
       place_name: {
         type: String,
-        required: true,
-        trim: true
+        required: false,
+        trim: true,
       },
-      latitude: {
-        type: Number,
-        required: true
-      },
-      longitude: {
-        type: Number,
-        required: true
-      }
-    }
+    },
   ],
 
   createdAt: {
@@ -157,6 +171,12 @@ const AllTrucksSchema = mongoose.Schema({
     default: Date.now
   }
 }, { timestamps: true });
+
+// ✅ Create geospatial index on all location fields
+AllTrucksSchema.index({ truck_location: "2dsphere" });
+AllTrucksSchema.index({ start_location: "2dsphere" });
+AllTrucksSchema.index({ route_stops: "2dsphere" });
+AllTrucksSchema.index({ delivery_locations: "2dsphere" });
 
 // 🚛 Middleware: Ensure truck availability before assigning
 AllTrucksSchema.pre("save", function (next) {

@@ -6,7 +6,6 @@ require('dotenv').config();
 
 // Generate Access Token
 const generateAccessToken = (user)=>{
-    console.log(user.isAccountApproved)
     return jwt.sign({id:user._id, role:user.role, password:user.password, isAccountApproved:user.isAccountApproved}, process.env.JWT_SECRET, {expiresIn:"1d"});
 }
 
@@ -18,22 +17,74 @@ const generateRefreshToken = (user)=>{
 
 const createUser = async (req, res) => {
     try {
-        const { username, email, password, role } = req.body;
+        const {
+            fullName,
+            username,
+            email,
+            password,
+            phone,
+            whatsappNumber,
+            role = "user",
+            aadharCardNumber,
+            panCardNumber,
+            location,
+            currentTruckId,
+            currentTruckNumber,
+            owner
+        } = req.body;
 
-        const existinguser = await User.findOne({email});
-        if(existinguser){
-            return res.status(400).json({message:"User already exists"});
+        // Check if the user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
         }
 
+        // Handle file uploads (stored in req.files)
+        const profilePhoto = req.files?.profilePhoto ? req.files.profilePhoto[0].path : null;
+        const aadharCardPhoto = req.files?.aadharCardPhoto ? req.files.aadharCardPhoto[0].path : null;
+        const panCardPhoto = req.files?.panCardPhoto ? req.files.panCardPhoto[0].path : null;
 
-        const user = new User({ username, email, password, role:role || "user" });
+        // Validate required fields for specific roles
+        if (["driver", "partner", "staff"].includes(role)) {
+            if (!aadharCardNumber || !aadharCardPhoto || !panCardNumber || !panCardPhoto) {
+                return res.status(400).json({ message: "Aadhar Card & PAN Card details are required for this role." });
+            }
+        }
+
+    
+        if (role === "partner" && !owner) {
+            return res.status(400).json({ message: "Owner ID is required for partners." });
+        }
+
+        
+        // Create new user object
+        const user = new User({
+            fullName,
+            username,
+            email,
+            password: password,
+            phone,
+            whatsappNumber,
+            role,
+            profilePhoto,
+            aadharCardNumber,
+            aadharCardPhoto,
+            panCardNumber,
+            panCardPhoto,
+            location: location ? JSON.parse(location) : undefined, // Parse location if provided
+            currentTruckId,
+            currentTruckNumber,
+            owner
+        });
+
         await user.save();
-        return res.status(201).json({message:"User created successfully.",user});
+        return res.status(201).json({ message: "User created successfully.", user });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server Error", error });
     }
-    catch (error) {
-        res.status(400).json({ message: "Invalid User data"});
-    }
-}
+};
+
 
 
 const loginUser = async (req, res)=>{

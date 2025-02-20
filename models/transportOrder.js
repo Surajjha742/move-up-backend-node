@@ -77,28 +77,27 @@ const transportOrderSchema = new mongoose.Schema({
     enum: ["waiting for except", "processing someone", "Pending", "In Transit", "Delivered", "Cancelled"],
     default: "Pending"
   },
-  // 📍 New: Location History (with place name)
+  
+  // ⏸️ Stops Along the Route (GeoJSON)
   locationHistory: [
     {
-      latitude: {
-        type: Number,
-        required: true
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
       },
-      longitude: {
-        type: Number,
-        required: true
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: false,
       },
       place_name: {
         type: String,
-        required: true,
-        trim: true
+        required: false,
+        trim: true,
       },
-      timestamp: {
-        type: Date,
-        default: Date.now
-      }
-    }
+    },
   ],
+
   // ✅ New: Accepted Order by Driver
   accepted_by_driver: {
     type: mongoose.Schema.Types.ObjectId,
@@ -113,11 +112,38 @@ const transportOrderSchema = new mongoose.Schema({
     default: null
   },
 
+  // 📍 Order's Current Location (GeoJSON)
+  order_location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true,
+    },
+  },
+
+  // ✅ New: List of Requested Trucks
+  requested_trucks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AllTrucks", // Reference to the trucks that received the request
+      required:false
+    }
+  ],
+
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+
+// 🔹 Create Geospatial Indexes
+transportOrderSchema.index({ order_location: "2dsphere" });
+transportOrderSchema.index({ locationHistory: "2dsphere" });
 
 
 const TransportOrder = mongoose.model('TransportOrder', transportOrderSchema);

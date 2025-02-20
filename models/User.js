@@ -85,16 +85,12 @@ const userSchema = new mongoose.Schema({
     currentTruckId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Truck", // Reference to the Truck model
-        required: function () {
-            return this.role === "driver";
-        },
+        required: false,
     },
     currentTruckNumber: {
         type: String, // Truck registration number
         trim: true,
-        required: function () {
-            return this.role === "driver";
-        },
+        required: false,
     },
     // 🏠 Owner (For Truck Owners or Partners)
     owner: {
