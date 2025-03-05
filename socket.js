@@ -5,12 +5,29 @@ const setupSocket = (io) => {
   io.on("connection", (socket) => {
     console.log(`⚡ Client Connected: ${socket.id}`);
 
+    // listen for truck room by truckid
+    socket.on("join_truckroom", (truckId)=>{
+      socket.join(truckId);
+      console.log("Joined truck:"+truckId);
+    })
+    
     // ✅ Listen for Order Updates
     socket.on("join_order", (orderId) => {
       socket.join(orderId);
       console.log(`📌 Joined Order Room: ${orderId}`);
     });
 
+    // ✅ Handle message
+    socket.on("message", async ({ orderId, messageData }) => {
+      console.log("Receved message")
+      console.log(orderId, messageData)
+      try {
+        io.to(orderId).emit("messaged", {message:"This is message", orderId, messageData });
+      } catch (error) {
+        console.error("❌ Error sending message:", error);
+      }
+    });
+    
     // ✅ Handle Location Updates
     socket.on("update_location", async ({ orderId, coordinates }) => {
       try {

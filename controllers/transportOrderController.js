@@ -38,6 +38,7 @@ const createOrder = async (req, res) => {
     }
 
 
+    
     // Create order object
     const order = new TransportOrder({
       user: req.user.id, // Authenticated user ID
@@ -63,13 +64,13 @@ const createOrder = async (req, res) => {
       requested_trucks:null,
       createdAt: Date.now(),
     });
-
+    
     // Save order to database
     await order.save();
 
     return res.status(201).json({ 
       message: "Transport order created successfully", 
-      "order":order._id,
+      "order_id":order._id,
       "order_location":order.order_location
     });
 
