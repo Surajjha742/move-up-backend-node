@@ -45,6 +45,7 @@ const addTruck = async (req, res) => {
 }
 
 const findNearestTrucks = async (req, res) => {
+    // console.log("Calling")
     try {
         let { longitude, latitude, maxDistance = 5000 } = req.body; // Default 5km
 

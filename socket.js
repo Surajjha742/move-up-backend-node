@@ -18,11 +18,11 @@ const setupSocket = (io) => {
     });
 
     // ✅ Handle message
-    socket.on("message", async ({ orderId, messageData }) => {
+    socket.on("message", async ({ orderId, messageData, currentorderLocation }) => {
       console.log("Receved message")
-      console.log(orderId, messageData)
+      console.log(orderId, messageData, currentorderLocation)
       try {
-        io.to(orderId).emit("messaged", {message:"This is message", orderId, messageData });
+        io.to(orderId).emit("messaged", {message:"This is message", orderId, messageData, currentorderLocation });
       } catch (error) {
         console.error("❌ Error sending message:", error);
       }
